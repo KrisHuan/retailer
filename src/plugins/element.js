@@ -19,8 +19,15 @@ import {
   Col,
   Table,
   TableColumn,
+  Switch,
+  ButtonGroup,
+  Tooltip,
+  Pagination,
+  Dialog,
 } from "element-ui";
 
+Vue.use(Dialog);
+Vue.use(Pagination);
 Vue.use(Button);
 Vue.use(Form);
 Vue.use(FormItem);
@@ -39,5 +46,8 @@ Vue.use(Col);
 Vue.use(Row);
 Vue.use(Table);
 Vue.use(TableColumn);
+Vue.use(Switch);
+Vue.use(ButtonGroup);
+Vue.use(Tooltip);
 
 Vue.prototype.$message = Message;
