@@ -19,9 +19,53 @@
           </el-input
         ></el-col>
         <el-col :span="4"
-          ><el-button type="primary">添加用户</el-button></el-col
+          ><el-button type="primary" @click="dialogVisible = true"
+            >添加用户</el-button
+          ></el-col
         >
       </el-row>
+
+      <!-- add users  -->
+
+      <el-dialog
+        title="添加用户"
+        :visible.sync="dialogVisible"
+        width="50%"
+        @close="addDiaClose"
+      >
+        <!-- content -->
+        <el-form
+          :model="ruleForm"
+          :rules="rules"
+          ref="ruleForm"
+          label-width="100px"
+        >
+          <!-- ph9one -->
+          <!-- prop绑定校验规则 -->
+          <el-form-item label="用户名" prop="username">
+            <el-input v-model="ruleForm.username"></el-input>
+          </el-form-item>
+          <!-- password -->
+          <el-form-item label="密码" prop="password">
+            <el-input v-model="ruleForm.password"></el-input>
+          </el-form-item>
+          <!-- email -->
+          <el-form-item label="邮箱" prop="email">
+            <el-input v-model="ruleForm.email"></el-input>
+          </el-form-item>
+          <!-- mobile-->
+          <el-form-item label="手机" prop="mobile">
+            <el-input v-model="ruleForm.mobile"></el-input>
+          </el-form-item>
+        </el-form>
+
+        <!-- footer -->
+        <span slot="footer" class="dialog-footer">
+          <el-button @click="dialogVisible = false">取 消</el-button>
+          <el-button type="primary" @click="addUser">确 定</el-button>
+        </span>
+      </el-dialog>
+
       <!-- 用户列表区域 -->
       <el-table :data="userlist" border stripe>
         <el-table-column type="index"></el-table-column>
@@ -94,6 +138,29 @@
 <script>
 export default {
   methods: {
+    // 对话框关闭
+    addDiaClose() {
+      this.$refs.ruleForm.resetFields();
+    },
+    addUser() {
+      this.$refs.ruleForm.validate(async (valid) => {
+        // console.log(valid);
+        if (!valid) return;
+        // request add users
+        const { data: res } = await this.$http.post("users", this.ruleForm);
+        if (res.meta.status !== 201) {
+          this.$message.warning("添加失败了哦");
+        }
+        this.$message.success("添加用户成功了, 666");
+        this.dialogVisible = false;
+        this.getUserList();
+      });
+    },
+    // //handle close
+    // handleClose(e) {
+    //   console.log(e);
+    // },
+
     async userStateChange(userinfo) {
       // console.log(state);//false or ture
       // get a put reqeust
@@ -137,6 +204,15 @@ export default {
     },
   },
   data() {
+    // cheak email rules
+    var checkEmail = (rule, value, cb) => {
+      const regEmail = /@/;
+      if (regEmail.test(value)) {
+        return cb();
+      } else {
+        cb(new Error("格式不对"));
+      }
+    };
     return {
       //获取用户列表的参数对象
       queryInfo: {
@@ -149,8 +225,22 @@ export default {
         // keywords: "",
       },
       userlist: [],
-
+      dialogVisible: false,
       total: 0,
+      ruleForm: {
+        username: "",
+        password: "",
+        email: "",
+        mobile: "",
+      },
+      rules: {
+        username: [{ required: true, trigger: "blur" }, { min: 2 }],
+        email: [
+          { required: true, trigger: "blur" },
+          { min: 2 },
+          { validator: checkEmail, trigger: "blur" },
+        ],
+      },
     };
   },
   created() {
