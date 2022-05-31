@@ -25,7 +25,7 @@
         >
       </el-row>
 
-      <!-- add users  -->
+      <!-- 添加用户的对话框  -->
 
       <el-dialog
         title="添加用户"
@@ -66,6 +66,39 @@
         </span>
       </el-dialog>
 
+      <!-- 修改用户的对话框 -->
+      <el-dialog
+        title="修改用户"
+        :visible.sync="editDialogVisible"
+        width="50%"
+        @close="editFormClosed"
+      >
+        <!-- //form -->
+        <el-form
+          ref="editFormRef"
+          :model="editForm"
+          label-width="80px"
+          :rules="editFormRules"
+        >
+          <el-form-item label="姓名">
+            <el-input v-model="editForm.username" disabled></el-input>
+          </el-form-item>
+
+          <el-form-item label="邮箱" prop="email">
+            <el-input v-model="editForm.email"></el-input>
+          </el-form-item>
+
+          <el-form-item label="手机">
+            <el-input v-model="editForm.mobile"></el-input>
+          </el-form-item>
+        </el-form>
+        <!-- // cancel -->
+        <span slot="footer" class="dialog-footer">
+          <el-button @click="editDialogVisible = false">取 消</el-button>
+          <el-button type="primary" @click="editUserInfo()">确 定</el-button>
+        </span>
+      </el-dialog>
+
       <!-- 用户列表区域 -->
       <el-table :data="userlist" border stripe>
         <el-table-column type="index"></el-table-column>
@@ -84,39 +117,43 @@
         </el-table-column>
         <!-- edit -->
         <el-table-column label="操作" width="170px">
-          <el-button-group>
-            <!-- xiu gai -->
-            <el-tooltip content="修改角色" placement="top">
-              <el-button
-                type="primary"
-                icon="el-icon-edit"
-                size="mini"
-              ></el-button>
-            </el-tooltip>
-            <!-- del -->
-            <el-tooltip content="删除角色" placement="top">
-              <el-button
-                type="danger"
-                icon="el-icon-delete"
-                size="mini"
-              ></el-button>
-            </el-tooltip>
-            <!-- dispatch -->
+          <template slot-scope="scope">
+            <el-button-group>
+              <!-- xiu gai -->
+              <el-tooltip content="修改角色" placement="top">
+                <el-button
+                  type="primary"
+                  icon="el-icon-edit"
+                  size="mini"
+                  @click="showEditDialog(scope.row.id)"
+                ></el-button>
+              </el-tooltip>
+              <!-- del -->
+              <el-tooltip content="删除角色" placement="top">
+                <el-button
+                  type="danger"
+                  icon="el-icon-delete"
+                  size="mini"
+                  @click="deleteUser(scope.row.id)"
+                ></el-button>
+              </el-tooltip>
+              <!-- dispatch -->
 
-            <el-tooltip
-              content="分配角色"
-              placement="top"
-              class="item"
-              effect="dark"
-              :enterable="false"
-            >
-              <el-button
-                type="primary"
-                icon="el-icon-setting"
-                size="mini"
-              ></el-button>
-            </el-tooltip>
-          </el-button-group>
+              <el-tooltip
+                content="分配角色"
+                placement="top"
+                class="item"
+                effect="dark"
+                :enterable="false"
+              >
+                <el-button
+                  type="primary"
+                  icon="el-icon-setting"
+                  size="mini"
+                ></el-button>
+              </el-tooltip>
+            </el-button-group>
+          </template>
         </el-table-column>
       </el-table>
 
@@ -138,6 +175,13 @@
 <script>
 export default {
   methods: {
+    // 展示编辑用户的对话框
+    async showEditDialog(id) {
+      const { data: res } = await this.$http.get(`/users/${id}`);
+      console.log(res.data);
+      this.editForm = res.data;
+      this.editDialogVisible = true;
+    },
     // 对话框关闭
     addDiaClose() {
       this.$refs.ruleForm.resetFields();
@@ -202,6 +246,56 @@ export default {
       this.total = res.data.total;
       // console.log(this.userlist);
     },
+
+    //editFormClosed
+    editFormClosed() {
+      this.$refs.editFormRef.resetFields();
+    },
+    //editDialogVisible = false
+    editUserInfo() {
+      // valid before req
+      this.$refs.editFormRef.validate(async (valid) => {
+        if (!valid) return this.$message.warning("验证不通过");
+        // requeset to put edit user info
+        const { email, mobile } = this.editForm;
+        const res = await this.$http.put("users/" + this.editForm.id, {
+          email,
+          mobile,
+        });
+        this.$message.success("更新成功");
+        this.getUserList();
+
+        console.log(res);
+      });
+      this.editDialogVisible = false;
+    },
+
+    // deleteUser
+    deleteUser(id) {
+      this.$confirm("此操作将永久删除该用户, 是否继续?", "提示", {
+        confirmButtonText: "确定",
+        cancelButtonText: "取消",
+        type: "warning",
+      })
+        .then(async () => {
+          // dele req
+          const { data: res } = await this.$http.delete("users/" + id);
+          console.log(res);
+          if (1) {
+            this.$message({
+              type: "success",
+              message: "删除成功!",
+            });
+          }
+          this.getUserList();
+        })
+        .catch(() => {
+          this.$message({
+            type: "info",
+            message: "已取消删除",
+          });
+        });
+    },
   },
   data() {
     // cheak email rules
@@ -214,6 +308,10 @@ export default {
       }
     };
     return {
+      // 查询到的用户信息对象
+      editForm: {},
+      //控制编辑弹框显示
+      editDialogVisible: false,
       //获取用户列表的参数对象
       queryInfo: {
         query: "",
@@ -235,6 +333,14 @@ export default {
       },
       rules: {
         username: [{ required: true, trigger: "blur" }, { min: 2 }],
+        email: [
+          { required: true, trigger: "blur" },
+          { min: 2 },
+          { validator: checkEmail, trigger: "blur" },
+        ],
+      },
+
+      editFormRules: {
         email: [
           { required: true, trigger: "blur" },
           { min: 2 },

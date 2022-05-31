@@ -24,6 +24,7 @@ import {
   Tooltip,
   Pagination,
   Dialog,
+  MessageBox,
 } from "element-ui";
 
 Vue.use(Dialog);
@@ -51,3 +52,4 @@ Vue.use(ButtonGroup);
 Vue.use(Tooltip);
 
 Vue.prototype.$message = Message;
+Vue.prototype.$confirm = MessageBox.confirm;
