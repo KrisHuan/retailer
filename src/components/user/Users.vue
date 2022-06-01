@@ -99,6 +99,35 @@
         </span>
       </el-dialog>
 
+      <!-- 分配角色的对话框 -->
+      <el-dialog
+        title="分配角色"
+        :visible.sync="setRoleDialogVisible"
+        width="50%"
+      >
+        <div>
+          <p>当前用户:{{ userInfo.username }}</p>
+          <p>当前角色:{{ userInfo.role_name }}</p>
+
+          <p>
+            分配新角色:
+            <el-select v-model="selectedRoleId">
+              <el-option
+                v-for="item in roleData"
+                :key="item.id"
+                :label="item.roleName"
+                :value="item.id"
+              >
+              </el-option>
+            </el-select>
+          </p>
+        </div>
+        <span slot="footer" class="dialog-footer">
+          <el-button @click="setRoleDialogVisible = false">取 消</el-button>
+          <el-button type="primary" @click="savRoleInfo()">确 定</el-button>
+        </span>
+      </el-dialog>
+
       <!-- 用户列表区域 -->
       <el-table :data="userlist" border stripe>
         <el-table-column type="index"></el-table-column>
@@ -116,43 +145,42 @@
           </template>
         </el-table-column>
         <!-- edit -->
-        <el-table-column label="操作" width="170px">
+        <el-table-column label="操作" width="280px">
           <template slot-scope="scope">
-            <el-button-group>
-              <!-- xiu gai -->
-              <el-tooltip content="修改角色" placement="top">
-                <el-button
-                  type="primary"
-                  icon="el-icon-edit"
-                  size="mini"
-                  @click="showEditDialog(scope.row.id)"
-                ></el-button>
-              </el-tooltip>
-              <!-- del -->
-              <el-tooltip content="删除角色" placement="top">
-                <el-button
-                  type="danger"
-                  icon="el-icon-delete"
-                  size="mini"
-                  @click="deleteUser(scope.row.id)"
-                ></el-button>
-              </el-tooltip>
-              <!-- dispatch -->
+            <!-- xiu gai -->
+            <el-tooltip content="修改角色" placement="top">
+              <el-button
+                type="primary"
+                icon="el-icon-edit"
+                size="mini"
+                @click="showEditDialog(scope.row.id)"
+              ></el-button>
+            </el-tooltip>
+            <!-- del -->
+            <el-tooltip content="删除角色" placement="top">
+              <el-button
+                type="danger"
+                icon="el-icon-delete"
+                size="mini"
+                @click="deleteUser(scope.row.id)"
+              ></el-button>
+            </el-tooltip>
+            <!-- dispatch -->
 
-              <el-tooltip
-                content="分配角色"
-                placement="top"
-                class="item"
-                effect="dark"
-                :enterable="false"
-              >
-                <el-button
-                  type="primary"
-                  icon="el-icon-setting"
-                  size="mini"
-                ></el-button>
-              </el-tooltip>
-            </el-button-group>
+            <el-tooltip
+              content="分配角色"
+              placement="top"
+              class="item"
+              effect="dark"
+              :enterable="false"
+            >
+              <el-button
+                type="primary"
+                icon="el-icon-setting"
+                size="mini"
+                @click="setRole(scope.row)"
+              ></el-button>
+            </el-tooltip>
           </template>
         </el-table-column>
       </el-table>
@@ -174,6 +202,70 @@
 
 <script>
 export default {
+  data() {
+    // cheak email rules
+    var checkEmail = (rule, value, cb) => {
+      const regEmail = /@/;
+      if (regEmail.test(value)) {
+        return cb();
+      } else {
+        cb(new Error("格式不对"));
+      }
+    };
+    return {
+      // 查询到的用户信息对象
+      editForm: {},
+      //控制编辑弹框显示
+      editDialogVisible: false,
+      //获取用户列表的参数对象
+      queryInfo: {
+        query: "",
+        // 页码值
+        pagenum: 1,
+        // pagesize 一页显示多少条
+        pagesize: 3,
+        // // keywords
+        // keywords: "",
+      },
+      userlist: [],
+      dialogVisible: false,
+      total: 0,
+      ruleForm: {
+        username: "",
+        password: "",
+        email: "",
+        mobile: "",
+      },
+      rules: {
+        username: [{ required: true, trigger: "blur" }, { min: 2 }],
+        email: [
+          { required: true, trigger: "blur" },
+          { min: 2 },
+          { validator: checkEmail, trigger: "blur" },
+        ],
+      },
+
+      editFormRules: {
+        email: [
+          { required: true, trigger: "blur" },
+          { min: 2 },
+          { validator: checkEmail, trigger: "blur" },
+        ],
+      },
+
+      //setRoleDialogVisible 控制分配角色对话框的显示与隐藏
+
+      setRoleDialogVisible: false,
+      userInfo: {},
+      // 所有的角色列表
+      roleData: [],
+      // 选中的角色id
+      selectedRoleId: "",
+    };
+  },
+  created() {
+    this.getUserList();
+  },
   methods: {
     // 展示编辑用户的对话框
     async showEditDialog(id) {
@@ -296,61 +388,38 @@ export default {
           });
         });
     },
-  },
-  data() {
-    // cheak email rules
-    var checkEmail = (rule, value, cb) => {
-      const regEmail = /@/;
-      if (regEmail.test(value)) {
-        return cb();
-      } else {
-        cb(new Error("格式不对"));
-      }
-    };
-    return {
-      // 查询到的用户信息对象
-      editForm: {},
-      //控制编辑弹框显示
-      editDialogVisible: false,
-      //获取用户列表的参数对象
-      queryInfo: {
-        query: "",
-        // 页码值
-        pagenum: 1,
-        // pagesize 一页显示多少条
-        pagesize: 3,
-        // // keywords
-        // keywords: "",
-      },
-      userlist: [],
-      dialogVisible: false,
-      total: 0,
-      ruleForm: {
-        username: "",
-        password: "",
-        email: "",
-        mobile: "",
-      },
-      rules: {
-        username: [{ required: true, trigger: "blur" }, { min: 2 }],
-        email: [
-          { required: true, trigger: "blur" },
-          { min: 2 },
-          { validator: checkEmail, trigger: "blur" },
-        ],
-      },
 
-      editFormRules: {
-        email: [
-          { required: true, trigger: "blur" },
-          { min: 2 },
-          { validator: checkEmail, trigger: "blur" },
-        ],
-      },
-    };
-  },
-  created() {
-    this.getUserList();
+    // 分配角色
+    async setRole(userInfo) {
+      // 在展示对话框之前 获取所有角色列表
+
+      const { data: res } = await this.$http.get("roles");
+      if (res.meta.status != 200) return this.$message.error("获取数据失败");
+      // console.log("--------------");
+      // console.log(res);
+      this.roleData = res.data; //???
+      // 展示对话框
+      this.setRoleDialogVisible = true;
+      this.userInfo = userInfo;
+      // console.log(userInfo);
+    },
+
+    //点击按钮 分配角色
+    async savRoleInfo() {
+      // console.log(this.selectedRoleId);
+      const { data: res } = await this.$http.put(
+        `users/${this.userInfo.id}/role`,
+        {
+          rid: this.selectedRoleId,
+        }
+      );
+      console.log(res.data);
+      if (res.meta.status !== 200)
+        return this.$message.error("更新用户数据失败"); //???
+      this.message.$success("更新用户数据成功");
+      this.getUserList();
+      this.setRoleDialogVisible = false;
+    },
   },
 };
 </script>
