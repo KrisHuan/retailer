@@ -38,7 +38,6 @@ export default {
   methods: {
     showDia() {
       this.$refs.dia.dialogVisible = true;
-      this.$refs.dia.getParentCate();
     },
   },
 };
