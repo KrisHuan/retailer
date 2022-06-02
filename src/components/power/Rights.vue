@@ -55,7 +55,7 @@ export default {
         case "2":
           return "三级";
         default:
-          return "未知权限";
+          break;
       }
     },
     id2style(id) {
