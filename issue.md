@@ -7,4 +7,8 @@
 // this.$parent.getParentCate();???
 //!!!数据未更新成功
 
-- 编辑 删除未完成
+- 编辑 删除
+
+## in EditDia
+
+- 编辑
