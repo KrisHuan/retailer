@@ -37,13 +37,15 @@ import {
   CheckboxGroup,
   Checkbox,
   Upload,
-  ButtonGroup
-
-
+  ButtonGroup,
+  Timeline,
+  TimelineItem
 } from "element-ui";
 
-Vue.use(Button);
 
+Vue.use(Timeline);
+Vue.use(TimelineItem);
+Vue.use(Button);
 Vue.use(Form);
 Vue.use(FormItem);
 Vue.use(Input);

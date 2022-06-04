@@ -12,3 +12,4 @@
 ## in EditDia
 
 - 编辑
+- 如何绕过 baseurl? in main js
