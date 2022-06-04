@@ -1,16 +1,16 @@
 import Vue from "vue";
 import VueRouter from "vue-router";
-import Login from "@/components/Login";
-import Home from "@/components/Home";
-import Welcome from "@/components/Welcome";
-import Users from "@/components/user/Users";
-import Rights from "@/components/power/Rights";
-import Roles from "@/components/power/Roles";
-import Cate from "@/components/goods/Cate";
-import Params from "@/components/goods/params";
-import List from "@/components/goods/list";
-import Add from "@/components/goods/add";
-import Order from "@/components/order";
+import Login from '@/views/Login'
+import Layout from "@/layout";
+import Welcome from "@/views/welcome";
+import Users from "@/views/user/index";
+import Rights from "@/views/power/Rights";
+import Roles from "@/views/power/Roles";
+import Cate from "@/views/goods/Cate";
+import Params from "@/views/goods/params";
+import List from "@/views/goods/list";
+import Add from "@/views/goods/add";
+import Order from "@/views/order";
 
 Vue.use(VueRouter);
 
@@ -20,7 +20,7 @@ const router = new VueRouter({
     { path: "/", component: Login },
     {
       path: "/home",
-      component: Home,
+      component: Layout,
       redirect: "/welcome",
       children: [
         { path: "/welcome", component: Welcome },
