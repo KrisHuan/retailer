@@ -17,11 +17,21 @@
       </template>
 
       <template slot="order" slot-scope="scope">
-        <el-tag> {{ scope.row.cat_level | level2txt }}</el-tag>
+        <el-tag :type="scope.row.cat_level | level2txt | txt2style">
+          {{ scope.row.cat_level | level2txt }}</el-tag
+        >
       </template>
-      <template slot="option">
-        <el-button type="primary" icon="el-icon-edit">编辑</el-button>
-        <el-button type="danger" icon="el-icon-delete">删除</el-button>
+      <template slot="option" slot-scope="scope">
+        <el-button type="primary" icon="el-icon-edit" size="mini"
+          >编辑</el-button
+        >
+        <el-button
+          type="danger"
+          icon="el-icon-delete"
+          size="mini"
+          @click="remove(scope.row.cat_id)"
+          >删除</el-button
+        >
       </template>
     </t-table>
   </div>
@@ -29,14 +39,9 @@
 
 <script>
 export default {
+  props: ["cateList"],
   data() {
     return {
-      queryInfo: {
-        type: 3,
-        pageNum: 1,
-        pagesize: 5,
-      },
-      cateList: [],
       columns: [
         {
           label: "分类名称",
@@ -60,18 +65,27 @@ export default {
       ],
     };
   },
-  created() {
-    this.getCateList();
-  },
+
   methods: {
-    async getCateList() {
-      const { data: res } = await this.$http.get("categories", {
-        params: this.queryInfo,
+    async remove(cateId) {
+      const isConfirm = await this.$confirm(
+        "此操作将永久删除这个分类, 是否继续?",
+        "提示",
+        {
+          confirmButtonText: "确定",
+          cancelButtonText: "取消",
+          type: "warning",
+        }
+      ).catch((e) => {
+        return e;
       });
-      if (res.meta.status != 200) return this.$message.error("失败");
-      console.log("res.data", res.data);
-      this.cateList = res.data;
-      this.$message.success("成功");
+      console.log(isConfirm);
+      if (isConfirm === "confirm") {
+        // 删除分类id
+        const { data: res } = await this.$http.delete(`categories/${cateId}`);
+        if (res.meta.status === 200) return this.$message.success(res.meta.msg);
+        this.$message.error(res.meta.msg);
+      }
     },
   },
   filters: {
@@ -83,6 +97,18 @@ export default {
           return "二级";
         case 2:
           return "三级";
+        default:
+          break;
+      }
+    },
+    txt2style(level) {
+      switch (level) {
+        case "一级":
+          return "";
+        case "二级":
+          return "info";
+        case "三级":
+          return "warning";
         default:
           break;
       }

@@ -38,22 +38,27 @@ export default {
       },
     };
   },
+  computed: {
+    cateId() {
+      return this.selKeys[this.selKeys.length - 1];
+    },
+  },
   methods: {
     // 点击按钮 修改参数
     show(id) {
       this.dialogVisible = true;
       this.ruleForm.attr_id = id;
-      console.log(this.ruleForm.attr_id);
       this.getParams(id);
     },
     hide() {
       this.dialogVisible = false;
       this.$refs.ruleForm.resetFields();
     },
-    // 查询参数api
+    //  根据 ID 查询参数
     async getParams(id) {
+      // categories/:id/attributes/:attrId
       const { data: res } = await this.$http.get(
-        `categories/${this.selKeys[this.selKeys.length - 1]}/attributes/${id}`,
+        `categories/${this.cateId}/attributes/${id}`,
         {
           params: {
             attr_sel: this.activeName,
@@ -63,29 +68,28 @@ export default {
       if (res.meta.status !== 200) return this.$message.error("查询参数失败");
       this.$message.success("查询参数成功");
       this.ruleForm = res.data;
-      console.log(res.data);
     },
-    //编辑api
+    //编辑提交参数
     async editParams() {
-      console.log(this.ruleForm.attr_id);
-      console.log(this.selKeys[this.selKeys.length - 1]);
-      console.log(this.activeName);
+      const cat_id = this.selKeys[this.selKeys.length - 1];
+      const attr_id = this.ruleForm.attr_id;
+      const name = this.activeName;
+      const attr_name = this.ruleForm.attr_name;
       const { data: res } = await this.$http.put(
-        // 分类ID和属性ID
-        `categories/${this.selKeys[this.selKeys.length - 1]}/attributes/${
-          this.ruleForm.attr_id
-        }`,
+        `categories/${cat_id}/attributes/${attr_id}`,
         {
-          params: {
-            attr_name: this.ruleForm.attr_name,
-            attr_sel: this.activeName,
-          },
+          attr_name: attr_name,
+          attr_sel: name,
         }
       );
+      if (res.meta.status !== 200) return this.$message.error(res.meta.msg);
+      this.$message.success(res.meta.msg);
       if (res.meta.status !== 200) return this.$message.error("编辑参数失败");
       this.$message.success("编辑参数成功");
       this.ruleForm = res.data;
-      console.log(res.data);
+      this.hide();
+
+      this.getParams(attr_id);
     },
   },
 };

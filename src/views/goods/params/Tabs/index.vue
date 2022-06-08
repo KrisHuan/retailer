@@ -1,6 +1,5 @@
 <template>
   <div>
-    {{ cateID }}
     <el-tabs v-model="activeName" @tab-click="handleClick">
       <!-- 动态参数 -->
       <el-tab-pane label="动态参数" name="many">
@@ -262,7 +261,7 @@ export default {
 
     //showEditDia
     showEditDia(id) {
-      this.$refs.showRef.show(id);
+      this.$refs.editRef.show(id);
     },
     //removeParam
     removeParam(attr_id) {

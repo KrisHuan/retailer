@@ -10,7 +10,7 @@
     <el-card>
       <el-row>
         <el-col>
-          <el-button type="primary"> 添加 </el-button>
+          <el-button type="primary" @click="addRole()"> 添加 </el-button>
         </el-col>
       </el-row>
 
@@ -26,7 +26,7 @@
             >
               <!-- 渲染一级权限 -->
               <el-col :span="5">
-                <el-tag closable @close="remove(scope.row, item1.id)">
+                <el-tag closable @close="delRights(scope.row, item1.id)">
                   {{ item1.authName }}
                 </el-tag>
                 <i class="el-icon-caret-right"></i>
@@ -43,7 +43,7 @@
                     <el-tag
                       type="success"
                       closable
-                      @close="remove(scope.row, item2.id)"
+                      @close="delRights(scope.row, item2.id)"
                     >
                       {{ item2.authName }}
                     </el-tag>
@@ -61,7 +61,7 @@
                         <el-tag
                           type="warning"
                           closable
-                          @close="remove(scope.row, item3.id)"
+                          @close="delRights(scope.row, item3.id)"
                         >
                           {{ item3.authName }}
                         </el-tag>
@@ -74,25 +74,33 @@
             </el-row>
           </template>
         </el-table-column>
-        <el-table-column type="index" label="#" width="50"> </el-table-column>
-        <el-table-column label="角色名字" prop="roleName" width="180">
+        <el-table-column type="index" label="#" width="100"> </el-table-column>
+        <el-table-column label="角色名字" prop="roleName" width="220">
         </el-table-column>
-        <el-table-column label="角色描述" prop="roleDesc" width="180">
+        <el-table-column label="角色描述" prop="roleDesc" width="294">
         </el-table-column>
 
-        <el-table-column label="操作" width="300">
+        <el-table-column label="操作" width="500">
           <template slot-scope="scope">
-            <el-button type="primary" size="mini" icon="el-icon-edit"
+            <el-button
+              type="primary"
+              size="mini"
+              icon="el-icon-edit"
+              @click="showEditDia(scope.row)"
               >编辑</el-button
             >
-            <el-button type="warning" size="mini" icon="el-icon-delete"
+            <el-button
+              type="warning"
+              size="mini"
+              icon="el-icon-delete"
+              @click="delRole(scope.row)"
               >删除</el-button
             >
             <el-button
               type="primary"
               size="mini"
               icon="el-icon-setting"
-              @click="showSetRightDialog(scope.row)"
+              @click="showSetRightDialog(scope.row.id)"
               >分配权限</el-button
             >
           </template>
@@ -113,7 +121,6 @@
         :props="treeProps"
         show-checkbox
         node-key="id"
-        default-expand-all
         :default-checked-keys="defKeys"
         ref="treeRef"
       ></el-tree>
@@ -123,11 +130,25 @@
         <el-button type="primary" @click="allotRights">确 定</el-button>
       </span>
     </el-dialog>
+    <!-- 编辑角色对话框 -->
+    <del-role :delDiaVisible="delDiaVisible"></del-role>
+    <!-- 删除角色对话框 -->
+    <edit-role ref="editRole"></edit-role>
+    <!-- 添加角色对话框 -->
+    <add-role ref="addRole"></add-role>
   </div>
 </template>
 
 <script>
+import DelRole from "./DelRole.vue";
+import EditRole from "./EditRole.vue";
+import AddRole from "./AddRole.vue";
 export default {
+  components: {
+    EditRole,
+    DelRole,
+    AddRole,
+  },
   data() {
     return {
       rolesData: [],
@@ -144,6 +165,8 @@ export default {
       defKeys: [105, 116],
       //roleId
       roleId: "",
+      // 控制删除角色对话框显示
+      delDiaVisible: false,
     };
   },
   created() {
@@ -154,23 +177,32 @@ export default {
       const { data: res } = await this.$http.get("roles");
       this.rolesData = res.data;
     },
-    // delete role
-    async remove(role, rightId) {
+    // 删除角色
+    async delRole(role) {
+      this.roleId = role.id;
       const isConfirm = await this.$confirm(
         "此操作将永久删除该角色, 是否继续?",
-        "提示",
         {
           confirmButtonText: "确定",
           cancelButtonText: "取消",
           type: "warning",
         }
       ).catch((err) => err);
-
       if (isConfirm !== "confirm") return;
+      const res = await this.$http.delete(`roles/${this.roleId}`);
+      console.log(res);
+    },
+
+    // delRights 删除角色指定权限
+    async delRights(role, rightId) {
+      const roleId = role.id;
       const { data: res } = await this.$http.delete(
-        `roles/${role.id}/rights/${rightId}`
+        `roles/${roleId}/rights/${rightId}`
       );
-      role.children = res.data;
+      if (res.meta.status !== 200)
+        return this.$messaparamse.error(res.meta.msg);
+      this.$message.success(res.meta.msg);
+      this.getRolesData();
     },
 
     //showSetRightDialog
@@ -203,16 +235,37 @@ export default {
         ...this.$refs.treeRef.getHalfCheckedKeys(),
       ];
       const idStr = keys.join(",");
-      console.log(idStr);
       const { data: res } = await this.$http.post(
         `roles/${this.roleId}/rights`,
         {
           rids: idStr,
         }
       );
-      // console.log(res);
+      console.log(res);
       if (res.meta.status != 200) return this.$message("失败");
       this.setRightDialogVisible = false;
+    },
+
+    showDelDia() {
+      this.delDiaVisible = true;
+    },
+    // 展示编辑对话框
+    showEditDia(row) {
+      this.$refs.editRole.show(row);
+    },
+
+    /// addRole 添加角色
+    async addRole() {
+      const { data: res } = await this.$http.post(`roles`, {
+        roleName: "admin2",
+        roleDesc: "admin2Desc",
+      });
+
+      if (res.meta.status !== 200) return this.$message.error(res.meta.msg);
+      this.$message.success(res.meta.msg);
+    },
+    addRole() {
+      this.$refs.addRole.show();
     },
   },
 };

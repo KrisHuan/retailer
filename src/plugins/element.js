@@ -39,7 +39,8 @@ import {
   Upload,
   ButtonGroup,
   Timeline,
-  TimelineItem
+  TimelineItem,
+  Notification
 } from "element-ui";
 
 
@@ -83,4 +84,5 @@ Vue.use(Upload);
 Vue.use(ButtonGroup);
 
 Vue.prototype.$message = Message;
+Vue.prototype.$notify = Notification;
 Vue.prototype.$confirm = MessageBox.confirm;

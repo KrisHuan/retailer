@@ -3,6 +3,7 @@ import App from "./App.vue";
 import router from "./router/index.js";
 import "./plugins/element.js";
 import "./assets/css/global.css";
+import '@/assets/font/iconfont.css'
 
 import ZkTable from 'vue-table-with-tree-grid'
 Vue.component("t-table", ZkTable)

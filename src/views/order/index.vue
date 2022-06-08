@@ -1,3 +1,4 @@
+
 <template>
   <!-- 订单页面 -->
   <div>
@@ -28,7 +29,7 @@
         </el-table-column>
         <el-table-column prop="pay_status" label="是否付款" width="100">
           <template slot-scope="scope">
-            <el-tag type="success" v-if="scope.row.pay_status === '1'"
+            <el-tag type="default" v-if="scope.row.pay_status === '1'"
               >已付款</el-tag
             >
             <el-tag type="danger" v-else>未付款</el-tag>

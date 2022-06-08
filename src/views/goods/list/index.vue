@@ -12,11 +12,16 @@
         <el-col :span="8">
           <el-input
             v-model="queryInfo.query"
+            @keyup.enter.native="getGoodsList"
             @blur="getGoodsList"
             clearable
             @clear="getGoodsList"
           >
-            <el-button slot="append" icon="el-icon-search"></el-button>
+            <el-button
+              slot="append"
+              icon="el-icon-search"
+              @click="getGoodsList"
+            ></el-button>
           </el-input>
         </el-col>
         <!-- 添加商品区域 -->
@@ -26,8 +31,14 @@
       </el-row>
       <!-- 表格区域 -->
       <el-table :data="goods" border stripe style="width: 100%">
-        <el-table-column type="index" width="60"> </el-table-column>
-        <el-table-column prop="goods_name" label="商品名称" width="180">
+        <el-table-column type="index" width="60" label="序号">
+          <template slot-scope="scope">
+            <span>{{
+              (queryInfo.pagenum - 1) * queryInfo.pagesize + scope.$index + 1
+            }}</span>
+          </template>
+        </el-table-column>
+        <el-table-column prop="goods_name" label="商品名称" width="263">
         </el-table-column>
         <el-table-column prop="goods_id" label="商品id" width="100">
         </el-table-column>
@@ -36,14 +47,14 @@
         <el-table-column prop="goods_price" label="商品价格" width="100">
         </el-table-column>
 
-        <el-table-column prop="add_time" label="添加时间" width="100">
+        <el-table-column prop="add_time" label="添加时间" width="180">
           <template slot-scope="scope">
             {{ scope.row.add_time | dateFormat }}
           </template>
         </el-table-column>
         <el-table-column prop="goods_weight" label="商品重量" width="180">
         </el-table-column>
-        <el-table-column label="操作" width="100">
+        <el-table-column label="操作" width="180">
           <template slot-scope="scope">
             <el-button
               type="primary"
@@ -97,6 +108,9 @@
 
 <script>
 export default {
+  created() {
+    this.getGoodsList();
+  },
   data() {
     return {
       //查询参数对象
@@ -113,9 +127,7 @@ export default {
       delDiaVis: false,
     };
   },
-  created() {
-    this.getGoodsList();
-  },
+
   methods: {
     async getGoodsList() {
       const { data: res } = await this.$http.get("goods", {

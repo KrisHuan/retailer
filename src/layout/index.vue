@@ -3,7 +3,7 @@
     <el-container class="home-container">
       <el-header>
         <div>
-          <img src="../assets/logo.png" alt="电商管理logo" width="200px" />
+          <img src="../assets/logo.png" width="200px" />
           <span>电商后台管理系统</span>
         </div>
         <el-button type="info" @click="logout">退出</el-button>
@@ -12,7 +12,10 @@
       <el-container>
         <!-- 侧边栏 -->
         <el-aside :width="isCollapse ? '64px' : '200px'">
-          <div class="toggle-button" @click="toggleCollapse">|||</div>
+          <div class="toggle-button" @click="toggleCollapse">
+            <i class="el-icon-s-unfold" v-if="isCollapse"></i>
+            <i class="el-icon-s-fold" v-else></i>
+          </div>
           <el-menu
             width="200px"
             default-active="2"
@@ -33,7 +36,7 @@
             >
               <!-- 一级菜单模板区域 -->
               <template slot="title">
-                <i class="el-icon-location"></i>
+                <i :class="iconObj[item.id]"></i>
                 <span>{{ item.authName }}</span>
               </template>
               <!-- 二级菜单区域 -->
@@ -67,6 +70,13 @@ export default {
       menuList: [],
       isCollapse: false,
       activePath: "",
+      iconObj: {
+        125: "el-icon-user-solid",
+        103: "el-icon-s-check",
+        101: "el-icon-shopping-bag-2",
+        102: "el-icon-notebook-2",
+        145: "el-icon-data-line",
+      },
     };
   },
   created() {

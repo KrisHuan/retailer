@@ -190,7 +190,7 @@
         @size-change="handleSizeChange"
         @current-change="handleCurrentChange"
         :current-page="queryInfo.pagenum"
-        :page-sizes="[1, 2, 5, 10]"
+        :page-sizes="[5, 10]"
         :page-size="queryInfo.pagesize"
         layout="total, sizes, prev, pager, next"
         :total="total"
@@ -223,9 +223,7 @@ export default {
         // 页码值
         pagenum: 1,
         // pagesize 一页显示多少条
-        pagesize: 3,
-        // // keywords
-        // keywords: "",
+        pagesize: 5,
       },
       userlist: [],
       dialogVisible: false,
@@ -373,7 +371,7 @@ export default {
           // dele req
           const { data: res } = await this.$http.delete("users/" + id);
           console.log(res);
-          if (1) {
+          if (res.meta.status === 200) {
             this.$message({
               type: "success",
               message: "删除成功!",
@@ -395,28 +393,25 @@ export default {
 
       const { data: res } = await this.$http.get("roles");
       if (res.meta.status != 200) return this.$message.error("获取数据失败");
-      // console.log("--------------");
-      // console.log(res);
       this.roleData = res.data; //???
       // 展示对话框
       this.setRoleDialogVisible = true;
       this.userInfo = userInfo;
-      // console.log(userInfo);
     },
 
     //点击按钮 分配角色
     async savRoleInfo() {
-      // console.log(this.selectedRoleId);
       const { data: res } = await this.$http.put(
         `users/${this.userInfo.id}/role`,
         {
           rid: this.selectedRoleId,
         }
       );
+
       console.log(res.data);
       if (res.meta.status !== 200)
         return this.$message.error("更新用户数据失败"); //???
-      this.message.$success("更新用户数据成功");
+      this.$message.success("更新用户数据成功");
       this.getUserList();
       this.setRoleDialogVisible = false;
     },

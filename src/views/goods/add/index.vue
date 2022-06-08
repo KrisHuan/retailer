@@ -2,12 +2,12 @@
   <div>
     <el-breadcrumb separator="/">
       <el-breadcrumb-item :to="{ path: '/home' }">首页</el-breadcrumb-item>
-      <el-breadcrumb-item>商品管理</el-breadcrumb-item>
+      <el-breadcrumb-item :to="{ path: '/goods' }">商品管理</el-breadcrumb-item>
       <el-breadcrumb-item>添加商品</el-breadcrumb-item>
     </el-breadcrumb>
     <!-- ----------------------------------------------------------------------------- -->
     <el-card>
-      <el-alert title="添加商品信息" type="info" show-icon :closable="false">
+      <el-alert title="添加商品信息" type="warning" show-icon :closable="false">
       </el-alert>
       <!-- ------------------------------------------------------------------------- -->
       <el-steps
@@ -41,20 +41,18 @@
           @tab-click="tabClick"
         >
           <el-tab-pane label="基本信息" name="0">
-            <el-form-item label="商品名称" props="goods_name">
+            <el-form-item label="商品名称" props="goods_name" autofocus>
               <el-input v-model="addForm.goods_name"></el-input>
             </el-form-item>
-
             <el-form-item label="商品价格" props="goods_price">
-              <el-input v-model="addForm.goods_price"></el-input>
+              <el-input v-model="addForm.goods_price" type="number"></el-input>
             </el-form-item>
-            <el-form-item label="商品数量" props="goods_number">
+            <el-form-item label="商品数量" props="goods_number" type="number">
               <el-input v-model="addForm.goods_number"></el-input>
             </el-form-item>
-            <el-form-item label="商品重量" props="goods_weight">
+            <el-form-item label="商品重量" props="goods_weight" type="number">
               <el-input v-model="addForm.goods_weight"></el-input>
             </el-form-item>
-
             <el-form-item label="商品类别" props="goods_cat">
               <!-- ------------------------------------------------------------------------- -->
               <!-- option:级联选择器数据源 -->
@@ -104,9 +102,9 @@ export default {
       addForm: {
         goods_name: "",
         goods_cat: 0,
-        goods_price: 0,
-        goods_number: 0,
-        goods_weight: 0,
+        goods_price: null,
+        goods_number: null,
+        goods_weight: null,
         // 商品所属的分类id数组
         goods_cat: [],
         // 图片的数组
