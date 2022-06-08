@@ -26,6 +26,7 @@ export default {
         color: ["#80FFA5", "#00DDFF", "#37A2FF", "#FF0087", "#FFBF00"],
         title: {
           text: "用户来源",
+          left: "center",
         },
         tooltip: {
           trigger: "axis",
@@ -37,6 +38,7 @@ export default {
           },
         },
         grid: {
+          top: "20%",
           left: "3%",
           right: "4%",
           bottom: "3%",
@@ -52,11 +54,29 @@ export default {
             type: "value",
           },
         ],
+        toolbox: {
+          feature: {
+            saveAsImage: {},
+          },
+        },
 
         series: [
           {
             symbol: "none", //去掉折线图中的节点
             smooth: false, //true 为平滑曲线，false为直线
+            areaStyle: {
+              opacity: 0.8,
+              color: new echarts.graphic.LinearGradient(0, 0, 0, 1, [
+                {
+                  offset: 0,
+                  color: "rgb(128, 255, 165)",
+                },
+                {
+                  offset: 1,
+                  color: "rgb(1, 191, 236)",
+                },
+              ]),
+            },
           },
         ],
       },
