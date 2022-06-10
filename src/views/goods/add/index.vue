@@ -40,6 +40,7 @@
           :before-leave="beforeTabLeave"
           @tab-click="tabClick"
         >
+          <!-- 基本信息 -->
           <el-tab-pane label="基本信息" name="0">
             <el-form-item label="商品名称" props="goods_name" autofocus>
               <el-input v-model="addForm.goods_name"></el-input>
@@ -64,10 +65,38 @@
               ></el-cascader>
             </el-form-item>
           </el-tab-pane>
+          <!-- 商品参数 attr -->
           <el-tab-pane label="商品参数" name="1">
             <!-- 渲染表单的item项 -->
+            <el-form-item
+              :label="item.attr_name"
+              v-for="(item, index) in manyTableData"
+              :key="index"
+            >
+              <!-- 渲染多选框组 -->
+
+              <!-- attr_vals: "30核HDR,55吋4K超薄曲面 人工智能,65吋4K超薄曲面" -->
+              <el-checkbox-group v-model="item.attr_vals">
+                <el-checkbox
+                  :label="item2"
+                  v-for="(item2, index2) in item.attr_vals"
+                  :key="index2"
+                  border
+                ></el-checkbox>
+              </el-checkbox-group>
+            </el-form-item>
           </el-tab-pane>
-          <el-tab-pane label="商品属性" name="2">商品属性</el-tab-pane>
+          <!-- 商品属性 -->
+          <el-tab-pane label="商品属性" name="2">
+            <el-form-item
+              label-width="200"
+              v-for="item in onlyTableData"
+              :key="item.attr_id"
+              :label="item.attr_name"
+            >
+              <el-input v-model="item.attr_vals"></el-input>
+            </el-form-item>
+          </el-tab-pane>
           <el-tab-pane label="商品图片" name="3">
             <!-- action表示要上传的图片地址 -->
             <el-upload
@@ -83,13 +112,18 @@
           </el-tab-pane>
           <el-tab-pane label="商品内容" name="4">
             <quill-editor v-model="addForm.goods_introduce"></quill-editor>
-            <el-button type="primary" class="addbBtn" @click="add"
+            <el-button type="primary" class="addbBtn" @click="postGoods"
               >添加商品</el-button
             >
           </el-tab-pane>
         </el-tabs>
       </el-form>
     </el-card>
+
+    <!-- 图片预览对话框 -->
+    <el-dialog title="图片预览" :visible.sync="picDiaVisible" width="30%">
+      <img :src="picUrl" alt="图片" width="100%" />
+    </el-dialog>
   </div>
 </template>
 
@@ -101,7 +135,7 @@ export default {
       activeIndex: "0",
       addForm: {
         goods_name: "",
-        goods_cat: 0,
+        goods_cat: "",
         goods_price: null,
         goods_number: null,
         goods_weight: null,
@@ -118,6 +152,8 @@ export default {
       cateList: [],
       manyTableData: [],
       onlyTableData: [],
+      // check box
+      checkList: [],
       // -------------------------------------------------------------------------
       //级联选择器属性
       cateProps: {
@@ -128,9 +164,19 @@ export default {
       },
       // 图片上传组件的headers请求头对象
       headerObj: {
-        Authorization: window.sessionStorage.getItem("token"),
+        Authorization: sessionStorage.getItem("token"),
       },
+      previewPath: "",
+      // 图片预览地址
+      picUrl: "",
+      picDiaVisible: false,
     };
+  },
+  computed: {
+    cateID() {
+      if (this.addForm.goods_cat.length === 3) return this.addForm.goods_cat[2];
+      return null;
+    },
   },
   created() {
     this.getCateList();
@@ -140,8 +186,6 @@ export default {
       const { data: res } = await this.$http.get(`categories`);
       if (res.meta.status !== 200) return this.$message.error("失败");
       this.$message.success("获取商品分类成功");
-      console.log(`111111111111111111111111111`);
-      console.log(res.data);
       this.cateList = res.data;
     },
     // 级联选择器发生变化 会触发这个函数
@@ -151,40 +195,42 @@ export default {
       }
     },
     beforeTabLeave(xin, oldActiveName) {
-      console.log(xin);
       if (oldActiveName === "0" && this.addForm.goods_cat.length !== 3) {
-        // this.$message.warning("请先选择商品分类");
-        // return false;
+        this.$message.warning("请先选择商品分类");
+        return false;
       }
-      console.log(xin);
     },
     async tabClick() {
       //   访问动态参数面板
       if (this.activeIndex === "1") {
         const { data: res } = await this.$http.get(
-          `categories${this.cateID}/attributes`,
+          `categories/${this.cateID}/attributes`,
           {
             params: { sel: "many" },
           }
         );
-        console.log(this.cateID);
-        console.log(res);
+        res.data.forEach((item) => {
+          item.attr_vals =
+            item.attr_vals.length === 0 ? [] : item.attr_vals.split(" ");
+        });
+        console.log(res.data);
+        this.manyTableData = res.data;
         if (res.meta.status !== 200)
-          return this.$message.error("获取动态参数列表失败");
-        return this.$message.success("成功获取动态参数列表成功");
+          return this.$message.error("获取商品参数失败");
+        return this.$message.success("获取商品参数成功");
       }
 
       // -------------------------------------------------------------------------
       //   访问静态属性面板
       if (this.activeIndex === "2") {
         const { data: res } = await this.$http.get(
-          `categories${this.cateID}/attributes`,
+          `categories/${this.cateID}/attributes`,
           {
             params: { sel: "only" },
           }
         );
-        console.log(this.cateID);
         console.log(res);
+        this.onlyTableData = res.data;
         if (res.meta.status !== 200)
           return this.$message.error("获取静态属性列表失败");
         return this.$message.success("静态属性列表成功");
@@ -193,19 +239,27 @@ export default {
       if (this.activeIndex === "3") {
       }
     },
+    // -------------------------------------------------------------------------
     // 处理图片预览
-    handlePreview() {},
+    handlePreview(file) {
+      // previewPath
+      this.picUrl = file.response.data.url;
+      this.picDiaVisible = true;
+    },
     //处理图片移除
     handleRemove(file) {
-      const filePath = file.response.data.tmp_path;
+      console.log(this.addForm.pics);
+      const path = file.response.data.tmp_path;
       const index = this.addForm.pics.findIndex((item) => {
-        item.pic === filePath;
+        item.pics === path;
       });
       this.addForm.pics.splice(index, 1);
       console.log(this.addForm.pics);
     },
+    // -------------------------------------------------------------------------
     // 上传成功的回调
     handleSuccess(response) {
+      console.log(response);
       // 拼接得到一个图片信息对象
       const picInfo = {
         pics: response.data.tmp_path,
@@ -215,7 +269,7 @@ export default {
       //   console.log(this.addForm.pics);
     },
     // 添加商品
-    async add() {
+    async postGoods() {
       const form = _.cloneDeep(this.addForm);
       form.goods_cat = form.goods_cat.join(",");
 
@@ -236,12 +290,6 @@ export default {
       if (res.meta.status !== 201) return this.$message.error("添加商品失败");
       this.$message.success("添加商品成功");
       this.$router.push("/goods");
-    },
-  },
-  computed: {
-    cateID() {
-      if (this.addForm.goods_cat.length === 3) return this.addForm.goods_cat[2];
-      return null;
     },
   },
 };

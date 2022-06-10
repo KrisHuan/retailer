@@ -25,7 +25,7 @@
               :class="['bdbottom', index == 0 ? 'bdtop' : '', 'vcenter']"
             >
               <!-- 渲染一级权限 -->
-              <el-col :span="5">
+              <el-col :span="5" class="first-rightsCol">
                 <el-tag closable @close="delRights(scope.row, item1.id)">
                   {{ item1.authName }}
                 </el-tag>
@@ -100,7 +100,7 @@
               type="primary"
               size="mini"
               icon="el-icon-setting"
-              @click="showSetRightDialog(scope.row.id)"
+              @click="showSetRightDialog(scope.row)"
               >分配权限</el-button
             >
           </template>
@@ -164,7 +164,7 @@ export default {
       //defKeys
       defKeys: [105, 116],
       //roleId
-      roleId: "",
+      roleId: null,
       // 控制删除角色对话框显示
       delDiaVisible: false,
     };
@@ -190,7 +190,7 @@ export default {
       ).catch((err) => err);
       if (isConfirm !== "confirm") return;
       const res = await this.$http.delete(`roles/${this.roleId}`);
-      console.log(res);
+      this.getRolesData();
     },
 
     // delRights 删除角色指定权限
@@ -235,14 +235,16 @@ export default {
         ...this.$refs.treeRef.getHalfCheckedKeys(),
       ];
       const idStr = keys.join(",");
+      console.log(this.roleId);
       const { data: res } = await this.$http.post(
         `roles/${this.roleId}/rights`,
         {
-          rids: idStr,
+          rids: "105,116",
         }
       );
       console.log(res);
       if (res.meta.status != 200) return this.$message("失败");
+      this.$notify.success("分配成功");
       this.setRightDialogVisible = false;
     },
 
@@ -252,17 +254,6 @@ export default {
     // 展示编辑对话框
     showEditDia(row) {
       this.$refs.editRole.show(row);
-    },
-
-    /// addRole 添加角色
-    async addRole() {
-      const { data: res } = await this.$http.post(`roles`, {
-        roleName: "admin2",
-        roleDesc: "admin2Desc",
-      });
-
-      if (res.meta.status !== 200) return this.$message.error(res.meta.msg);
-      this.$message.success(res.meta.msg);
     },
     addRole() {
       this.$refs.addRole.show();
@@ -275,6 +266,11 @@ export default {
 .el-col {
   margin-top: 5px;
   margin-bottom: 5px;
+}
+.first-rightsCol {
+  .el-tag {
+    margin-left: 20px;
+  }
 }
 .bdtop {
   border-top: 1px solid #eee;

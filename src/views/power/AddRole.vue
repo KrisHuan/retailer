@@ -12,7 +12,6 @@
           <el-input v-model="row.roleDesc"></el-input>
         </el-form-item>
       </el-form>
-      <span>{{ row }}</span>
       <span slot="footer">
         <el-button @click="hide()">取 消</el-button>
         <el-button type="primary" @click="addRole()">确 定</el-button>
@@ -45,6 +44,7 @@ export default {
       });
       if (res.meta.status !== 201) return this.$message.error(res.meta.msg);
       this.$message.success(res.meta.msg);
+      this.getRolesData();
       // 添加完毕后关闭对话框
       this.hide();
     },

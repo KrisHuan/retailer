@@ -9,6 +9,7 @@
       :expand-type="false"
       :selection-type="false"
       :border="true"
+      :default-expanded-keys="defaultExpandIds"
     >
       <template slot="isok" slot-scope="scope">
         <!-- {{ scope }} -->
@@ -79,11 +80,13 @@ export default {
       ).catch((e) => {
         return e;
       });
-      console.log(isConfirm);
       if (isConfirm === "confirm") {
         // 删除分类id
         const { data: res } = await this.$http.delete(`categories/${cateId}`);
-        if (res.meta.status === 200) return this.$message.success(res.meta.msg);
+        if (res.meta.status === 200) {
+          this.$emit("getCateList");
+          return this.$message.success(res.meta.msg);
+        }
         this.$message.error(res.meta.msg);
       }
     },

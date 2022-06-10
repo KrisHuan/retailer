@@ -9,7 +9,7 @@
     <!-- 卡片视图 -->
     <el-card>
       <el-table :data="showData" style="width: 100%" stripe border>
-        <el-table-column type="index" label="#" width="200"> </el-table-column>
+        <el-table-column type="index" label="#" width="100"> </el-table-column>
         <el-table-column prop="authName" label="权限名称" width="180">
         </el-table-column>
         <el-table-column prop="path" label="路径" width="200">
@@ -44,7 +44,7 @@ export default {
       rightsData: [],
       showData: [],
       currentPage: 1,
-      pageSize: 5,
+      pageSize: 10,
     };
   },
   created() {

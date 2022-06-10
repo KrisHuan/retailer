@@ -13,7 +13,7 @@
         <el-button type="primary" @click="showDia()">添加分类</el-button>
       </el-row>
       <!-- t-table -->
-      <cate-card :cateList="cateList"></cate-card>
+      <cate-card :cateList="cateList" @getCateList="getCateList()"></cate-card>
     </el-card>
 
     <!-- 分页区域 -->
@@ -59,6 +59,7 @@ export default {
   },
   methods: {
     async getCateList() {
+      console.log(1);
       const { data: res } = await this.$http.get("categories", {
         params: this.queryInfo,
       });

@@ -1,9 +1,10 @@
 import Vue from "vue";
 import App from "./App.vue";
 import router from "./router/index.js";
-import "./plugins/element.js";
 import "./assets/css/global.css";
 import '@/assets/font/iconfont.css'
+import "./plugins/element.js";
+// vue use
 
 import ZkTable from 'vue-table-with-tree-grid'
 Vue.component("t-table", ZkTable)
@@ -34,24 +35,14 @@ axios.interceptors.response.use((config) => {
 });
 Vue.prototype.$http = axios;
 
-// 定义全局时间过滤器
-/*
-dateFormat 过滤器名字
-originVal 为传入的要处理的时间参数
-+‘ ’ 是为了转为字符串形式 也可以使用toString()方法
-padStart() 用于头部补全 不足2位的话用0补全
-*/
-Vue.filter('dateFormat', function (originVal) {
-  const dt = new Date(originVal)
-  const y = dt.getFullYear()
-  const m = (dt.getMonth() + 1 + '').padStart(2, '0')
-  const d = (dt.getDate() + '').padStart(2, '0')
-  const hh = (dt.getHours() + '').padStart(2, '0')
-  const mm = (dt.getMinutes() + '').padStart(2, '0')
-  const ss = (dt.getSeconds() + '').padStart(2, '0')
-  return `${y}-${m}-${d} ${hh}:${mm}:${ss}`
-})
 
+// 全局filter
+import * as filters from '@/filters'
+// 导出的是对象，可以直接通过 key 和 value 来获得过滤器的名和过滤器的方法
+console.log(filters)
+Object.keys(filters).forEach(key => {
+  Vue.filter(key, filters[key])
+})
 
 
 let vm = new Vue({
